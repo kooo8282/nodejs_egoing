@@ -74,6 +74,10 @@ var app = http.createServer(function(request,response){
             response.writeHead(200);
             response.end(template);  
         });  
+    } else if(pathname === '/process_create'){
+        //create file in data directory with a FormData posted from ./create
+        response.writeHead(200);
+        response.end('success'); 
     } else{
         response.writeHead(404);
         response.end('Not found');
