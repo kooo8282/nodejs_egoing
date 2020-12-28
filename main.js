@@ -2,6 +2,7 @@
 var http = require('http');
 var fs = require('fs');
 var url = require('url');
+let qs = require('querystring');
 
 function templateHTML(title, tags, body){
     return `
@@ -76,8 +77,20 @@ var app = http.createServer(function(request,response){
         });  
     } else if(pathname === '/process_create'){
         //create file in data directory with a FormData posted from ./create
-        response.writeHead(200);
-        response.end('success'); 
+        let body='';
+        request.on('data', function(data){
+            body += data;
+        });
+        request.on('end', function(){
+            let post = qs.parse(body);
+            let title = post.title;
+            let description = post.description;
+            fs.writeFile(`data/${title}`, description, 'utf8', function(err){
+                // redirection in Nodejs
+                response.writeHead(302, {Location: `/?id=${title}`});
+                response.end();
+            })
+        });
     } else{
         response.writeHead(404);
         response.end('Not found');
