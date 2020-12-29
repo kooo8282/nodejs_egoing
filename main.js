@@ -112,6 +112,28 @@ var app = http.createServer(function (request, response) {
                 response.end(template);
             });
         });
+    } else if (pathname === '/process_update') {
+        //create file in data directory with a FormData posted from ./create
+        let body = '';
+        request.on('data', function (data) {
+            body += data;
+        });
+        request.on('end', function () {
+            let post = qs.parse(body);
+            let id = post.id;
+            let title = post.title;
+            let description = post.description;
+            // syntax: fs.rename(oldPath, newPath, callback)
+            fs.rename(`data/${id}`, `data/${title}`, function (error) {
+                fs.writeFile(`data/${title}`, description, 'utf8', function (err) {
+                    // redirection in Nodejs
+                    response.writeHead(302, { Location: `/?id=${title}` });
+                    response.end();
+                })
+            })
+
+
+        });
     } else {
         response.writeHead(404);
         response.end('Not found');
