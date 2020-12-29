@@ -93,6 +93,25 @@ var app = http.createServer(function (request, response) {
                 response.end();
             })
         });
+    } else if (pathname === '/update') {
+        fs.readdir('data', function (err, filelist) {
+            let tags = makelist(filelist);
+            fs.readFile(`data/${queryData.id}`, 'utf8', function (err, description) {
+                let title = queryData.id;
+                let body = `
+                <form action="/process_update" method="post">
+                <input type="hidden" name="id" value="${title}">
+                <p><input type="text" name="title" placeholder="title" value="${title}"></p>
+                <p><textarea name="description" placeholder="description" rows="4" cols="50">${description}</textarea></p>
+                <p><input type="submit" value="submit"></p>
+                </form>
+                `;
+                let control = `<a href="/create">create</a> <a href="/update?id=${title}">update</a>`
+                let template = templateHTML(title, tags, control, body);
+                response.writeHead(200);
+                response.end(template);
+            });
+        });
     } else {
         response.writeHead(404);
         response.end('Not found');
