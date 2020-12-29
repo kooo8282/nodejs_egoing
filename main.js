@@ -4,7 +4,7 @@ var fs = require('fs');
 var url = require('url');
 let qs = require('querystring');
 
-function templateHTML(title, tags, body){
+function templateHTML(title, tags, control, body) {
     return `
     <!doctype html>
     <html>
@@ -15,54 +15,56 @@ function templateHTML(title, tags, body){
     <body>
     <h1><a href="/">WEB2</a></h1>
     ${tags}
-    <a href="/create">create</a>
+    ${control}
     ${body}
     </body>
     </html>
     `;
 }
-function makelist(filelist){
+function makelist(filelist) {
     let tags = '<ul>';
-    for(let i=0; i<filelist.length; i++){
+    for (let i = 0; i < filelist.length; i++) {
         tags += `<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
     }
     tags += '</ul>';
     return tags;
 }
 
-var app = http.createServer(function(request,response){
+var app = http.createServer(function (request, response) {
     var _url = request.url;
     let parsedURL = url.parse(_url, true);
     var queryData = parsedURL.query;
     let pathname = parsedURL.pathname;
     // console.log(parsedURL.pathname);
-    
-    if(pathname === '/'){
-        if(queryData.id === undefined){
-            fs.readdir('data',function(err,filelist){
+
+    if (pathname === '/') {
+        if (queryData.id === undefined) {
+            fs.readdir('data', function (err, filelist) {
                 let tags = makelist(filelist);
                 let title = 'Welcome';
                 let description = 'Hello, Node.js';
                 let body = `<h2>${title}</h2><p>${description}</p>`;
-                let template = templateHTML(title, tags, body);
+                let control = `<a href="/create">create</a>`
+                let template = templateHTML(title, tags, control, body);
                 response.writeHead(200);
-                response.end(template);  
-            });                      
-        } else{
-            fs.readdir('data',function(err,filelist){
+                response.end(template);
+            });
+        } else {
+            fs.readdir('data', function (err, filelist) {
                 let tags = makelist(filelist);
-                fs.readFile(`data/${queryData.id}`, 'utf8', function(err,description){        
+                fs.readFile(`data/${queryData.id}`, 'utf8', function (err, description) {
                     let title = queryData.id;
                     let body = `<h2>${title}</h2><p>${description}</p>`;
-                    let template = templateHTML(title, tags, body);
+                    let control = `<a href="/create">create</a> <a href="/update?id=${title}">update</a>`
+                    let template = templateHTML(title, tags, control, body);
                     response.writeHead(200);
                     response.end(template);
                 });
-            });            
-        }        
-    } else if(pathname === '/create'){
-        fs.readdir('data',function(err,filelist){
-            let title = 'WEB - create';            
+            });
+        }
+    } else if (pathname === '/create') {
+        fs.readdir('data', function (err, filelist) {
+            let title = 'WEB - create';
             let tags = makelist(filelist);
             let body = `
                 <form action="http://localhost:3000/process_create" method="post">
@@ -71,29 +73,29 @@ var app = http.createServer(function(request,response){
                 <p><input type="submit" value="submit"></p>
                 </form>
             `;
-            let template = templateHTML(title, tags, body);
+            let template = templateHTML(title, tags, '', body);
             response.writeHead(200);
-            response.end(template);  
-        });  
-    } else if(pathname === '/process_create'){
+            response.end(template);
+        });
+    } else if (pathname === '/process_create') {
         //create file in data directory with a FormData posted from ./create
-        let body='';
-        request.on('data', function(data){
+        let body = '';
+        request.on('data', function (data) {
             body += data;
         });
-        request.on('end', function(){
+        request.on('end', function () {
             let post = qs.parse(body);
             let title = post.title;
             let description = post.description;
-            fs.writeFile(`data/${title}`, description, 'utf8', function(err){
+            fs.writeFile(`data/${title}`, description, 'utf8', function (err) {
                 // redirection in Nodejs
-                response.writeHead(302, {Location: `/?id=${title}`});
+                response.writeHead(302, { Location: `/?id=${title}` });
                 response.end();
             })
         });
-    } else{
+    } else {
         response.writeHead(404);
         response.end('Not found');
-    } 
+    }
 });
 app.listen(3000);
