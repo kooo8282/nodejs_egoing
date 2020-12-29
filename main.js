@@ -58,7 +58,7 @@ var app = http.createServer(function (request, response) {
                     let control =
                         `   <a href="/create">create</a> 
                         <a href="/update?id=${title}">update</a>
-                        <form action="/process_delete" method="post" onclick="alert('Are you sure?')>
+                        <form action="/process_delete" method="post" onsubmit="alert('you wanna delete ${title}?');">
                             <input type="hidden" name="id" value="${title}">
                             <input type="submit" value="delete">
                         </form>
@@ -147,6 +147,11 @@ var app = http.createServer(function (request, response) {
         request.on('end', function () {
             let post = qs.parse(body);
             let id = post.id;
+            console.log(id);
+            fs.unlink(`data/${id}`,function(error){
+                response.writeHead(302, { Location: `/`});
+                response.end();
+            })
 
         });
     } else {
