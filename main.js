@@ -138,7 +138,15 @@ var app = http.createServer(function (request, response) {
                     response.end();
                 })
             })
-
+        });
+    } else if (pathname === '/process_delete') {
+        let body = '';
+        request.on('data', function (data) {
+            body += data;
+        });
+        request.on('end', function () {
+            let post = qs.parse(body);
+            let id = post.id;
 
         });
     } else {
