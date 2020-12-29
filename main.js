@@ -55,7 +55,14 @@ var app = http.createServer(function (request, response) {
                 fs.readFile(`data/${queryData.id}`, 'utf8', function (err, description) {
                     let title = queryData.id;
                     let body = `<h2>${title}</h2><p>${description}</p>`;
-                    let control = `<a href="/create">create</a> <a href="/update?id=${title}">update</a>`
+                    let control =
+                        `   <a href="/create">create</a> 
+                        <a href="/update?id=${title}">update</a>
+                        <form action="/process_delete" method="post" onclick="alert('Are you sure?')>
+                            <input type="hidden" name="id" value="${title}">
+                            <input type="submit" value="delete">
+                        </form>
+                    `
                     let template = templateHTML(title, tags, control, body);
                     response.writeHead(200);
                     response.end(template);
