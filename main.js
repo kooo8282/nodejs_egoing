@@ -4,6 +4,7 @@ var fs = require('fs');
 var url = require('url');
 let qs = require('querystring');
 let template =require('./lib/template.js');
+let path = require('path');
 
 var app = http.createServer(function (request, response) {
     var _url = request.url;
@@ -26,9 +27,10 @@ var app = http.createServer(function (request, response) {
             });
         } else {
             fs.readdir('data', function (err, filelist) {
-                let tags = template.list(filelist);
-                fs.readFile(`data/${queryData.id}`, 'utf8', function (err, description) {
-                    let title = queryData.id;
+                let filteredId = path.parse(queryData.id).base;
+                fs.readFile(`data/${filteredId}`, 'utf8', function (err, description) {
+                    let title = filteredId;
+                    let tags = template.list(filelist);
                     let body = `<h2>${title}</h2><p>${description}</p>`;
                     let control =
                         `   <a href="/create">create</a> 
@@ -77,9 +79,10 @@ var app = http.createServer(function (request, response) {
         });
     } else if (pathname === '/update') {
         fs.readdir('data', function (err, filelist) {
+            let filteredId = path.parse(queryData.id).base;
             let tags = template.list(filelist);
-            fs.readFile(`data/${queryData.id}`, 'utf8', function (err, description) {
-                let title = queryData.id;
+            fs.readFile(`data/${filteredId}`, 'utf8', function (err, description) {
+                let title = filteredId;
                 let body = `
                 <form action="/process_update" method="post">
                 <input type="hidden" name="id" value="${title}">
