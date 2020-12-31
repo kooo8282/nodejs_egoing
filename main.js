@@ -4,31 +4,59 @@ var fs = require('fs');
 var url = require('url');
 let qs = require('querystring');
 
-function templateHTML(title, tags, control, body) {
-    return `
-    <!doctype html>
-    <html>
-    <head>
-    <title>WEB1 - ${title}</title>
-    <meta charset="utf-8">
-    </head>
-    <body>
-    <h1><a href="/">WEB2</a></h1>
-    ${tags}
-    ${control}
-    ${body}
-    </body>
-    </html>
-    `;
-}
-function makelist(filelist) {
-    let tags = '<ul>';
-    for (let i = 0; i < filelist.length; i++) {
-        tags += `<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
+let template = {
+    html: function (title, tags, control, body) {
+        return `
+        <!doctype html>
+        <html>
+        <head>
+        <title>WEB1 - ${title}</title>
+        <meta charset="utf-8">
+        </head>
+        <body>
+        <h1><a href="/">WEB2</a></h1>
+        ${tags}
+        ${control}
+        ${body}
+        </body>
+        </html>
+        `;
+    },
+    list: function (filelist) {
+        let tags = '<ul>';
+        for (let i = 0; i < filelist.length; i++) {
+            tags += `<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
+        }
+        tags += '</ul>';
+        return tags;
     }
-    tags += '</ul>';
-    return tags;
 }
+
+// function templateHTML(title, tags, control, body) {
+//     return `
+//     <!doctype html>
+//     <html>
+//     <head>
+//     <title>WEB1 - ${title}</title>
+//     <meta charset="utf-8">
+//     </head>
+//     <body>
+//     <h1><a href="/">WEB2</a></h1>
+//     ${tags}
+//     ${control}
+//     ${body}
+//     </body>
+//     </html>
+//     `;
+// }
+// function makelist(filelist) {
+//     let tags = '<ul>';
+//     for (let i = 0; i < filelist.length; i++) {
+//         tags += `<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
+//     }
+//     tags += '</ul>';
+//     return tags;
+// }
 
 var app = http.createServer(function (request, response) {
     var _url = request.url;
@@ -40,18 +68,18 @@ var app = http.createServer(function (request, response) {
     if (pathname === '/') {
         if (queryData.id === undefined) {
             fs.readdir('data', function (err, filelist) {
-                let tags = makelist(filelist);
+                let tags = template.list(filelist);
                 let title = 'Welcome';
                 let description = 'Hello, Node.js';
                 let body = `<h2>${title}</h2><p>${description}</p>`;
                 let control = `<a href="/create">create</a>`
-                let template = templateHTML(title, tags, control, body);
+                let html = template.html(title, tags, control, body);
                 response.writeHead(200);
-                response.end(template);
+                response.end(html);
             });
         } else {
             fs.readdir('data', function (err, filelist) {
-                let tags = makelist(filelist);
+                let tags = template.list(filelist);
                 fs.readFile(`data/${queryData.id}`, 'utf8', function (err, description) {
                     let title = queryData.id;
                     let body = `<h2>${title}</h2><p>${description}</p>`;
@@ -63,16 +91,16 @@ var app = http.createServer(function (request, response) {
                             <input type="submit" value="delete">
                         </form>
                     `
-                    let template = templateHTML(title, tags, control, body);
+                    let html = template.html(title, tags, control, body);
                     response.writeHead(200);
-                    response.end(template);
+                    response.end(html);
                 });
             });
         }
     } else if (pathname === '/create') {
         fs.readdir('data', function (err, filelist) {
             let title = 'WEB - create';
-            let tags = makelist(filelist);
+            let tags = template.list(filelist);
             let body = `
                 <form action="http://localhost:3000/process_create" method="post">
                 <p><input type="text" name="title" placeholder="title"></p>
@@ -80,9 +108,9 @@ var app = http.createServer(function (request, response) {
                 <p><input type="submit" value="submit"></p>
                 </form>
             `;
-            let template = templateHTML(title, tags, '', body);
+            let html = template.html(title, tags, '', body);
             response.writeHead(200);
-            response.end(template);
+            response.end(html);
         });
     } else if (pathname === '/process_create') {
         //create file in data directory with a FormData posted from ./create
@@ -102,7 +130,7 @@ var app = http.createServer(function (request, response) {
         });
     } else if (pathname === '/update') {
         fs.readdir('data', function (err, filelist) {
-            let tags = makelist(filelist);
+            let tags = template.list(filelist);
             fs.readFile(`data/${queryData.id}`, 'utf8', function (err, description) {
                 let title = queryData.id;
                 let body = `
@@ -114,9 +142,9 @@ var app = http.createServer(function (request, response) {
                 </form>
                 `;
                 let control = `<a href="/create">create</a> <a href="/update?id=${title}">update</a>`
-                let template = templateHTML(title, tags, control, body);
+                let html = template.html(title, tags, control, body);
                 response.writeHead(200);
-                response.end(template);
+                response.end(html);
             });
         });
     } else if (pathname === '/process_update') {
@@ -148,8 +176,8 @@ var app = http.createServer(function (request, response) {
             let post = qs.parse(body);
             let id = post.id;
             console.log(id);
-            fs.unlink(`data/${id}`,function(error){
-                response.writeHead(302, { Location: `/`});
+            fs.unlink(`data/${id}`, function (error) {
+                response.writeHead(302, { Location: `/` });
                 response.end();
             })
 
