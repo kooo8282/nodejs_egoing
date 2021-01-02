@@ -1,0 +1,25 @@
+{
+  "name": "nodejs_egoing",
+  "version": "1.0.0",
+  "description": "my first nodejs application with egoing",
+  "main": "main.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kooo8282/nodejs_egoing.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kooo8282/nodejs_egoing/issues"
+  },
+  "homepage": "https://github.com/kooo8282/nodejs_egoing#readme",
+  "dependencies": {
+    "sanitize-html": "^2.3.0"
+  }
+}
